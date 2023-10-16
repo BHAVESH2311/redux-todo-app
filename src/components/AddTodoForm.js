@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { addTodoAsync } from "../redux/todoSlice";
+import { addTodoAsync, resetForm } from "../redux/todoSlice";
 
 const AddTodoForm = () => {
   const [value, setValue] = useState("");
+  const [date, setDate] = useState("");
 
   const dispatch = useDispatch();
 
@@ -13,8 +14,11 @@ const AddTodoForm = () => {
     dispatch(
       addTodoAsync({
         title: value,
+        endDate: date,
       })
     );
+    setValue("");
+    setDate("");
   };
 
   return (
@@ -31,6 +35,13 @@ const AddTodoForm = () => {
       <button type="submit" className="btn btn-primary mb-2">
         Submit
       </button>
+
+      <input
+        type="date"
+        className="form-control mb-2 mr-sm-2"
+        value={date}
+        onChange={(event) => setDate(event.target.value)}
+      ></input>
     </form>
   );
 };

@@ -1,8 +1,16 @@
 import React from "react";
-import { useDispatch } from "react-redux";
-import { deleteTodoAsync, toggleCompleteAsync } from "../redux/todoSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  deleteTodoAsync,
+  toggleCompleteAsync,
+  updateModal,
+} from "../redux/todoSlice";
 
-const TodoItem = ({ id, title, completed }) => {
+const TodoItem = ({ id, title, completed, endDate }) => {
+  const state = useSelector((state) => state);
+
+  console.log(state);
+  console.log(state.todos.todos[1].endDate);
   const dispatch = useDispatch();
   const handleComplete = () => {
     console.log(completed);
@@ -10,6 +18,15 @@ const TodoItem = ({ id, title, completed }) => {
       toggleCompleteAsync({
         id: id,
         completed: !completed,
+      })
+    );
+  };
+
+  const handleModal = () => {
+    dispatch(
+      updateModal({
+        isModalOpen: true,
+        id,
       })
     );
   };
@@ -36,6 +53,10 @@ const TodoItem = ({ id, title, completed }) => {
         <button className="btn btn-danger" onClick={handleDelete}>
           Delete
         </button>
+        <button className="btn btn-danger" onClick={handleModal}>
+          update
+        </button>
+        <label>{endDate}</label>
       </div>
     </li>
   );

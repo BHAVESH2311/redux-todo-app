@@ -19,11 +19,12 @@ export const addTodoAsync = createAsyncThunk(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title: payload.title }),
+      body: JSON.stringify({ title: payload.title, endDate: payload.endDate }),
     });
 
     if (res.ok) {
       const todo = await res.json();
+      console.log({ todo });
       return { todo };
     }
   }
@@ -59,54 +60,73 @@ export const deleteTodoAsync = createAsyncThunk(
   }
 );
 
+export const updateTodoAsync = createAsyncThunk(
+  "todos/updateTodoAsync",
+  async (payload) => {
+    console.log(payload);
+    const res = await fetch(`http://localhost:7000/todos/${payload.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title: payload.title, endDate: payload.endDate }),
+    });
+    if (res.ok) {
+      return payload;
+    }
+  }
+);
+
 const todoSlice = createSlice({
   name: "todos",
-  initialState: [
-    { id: 1, title: "todo1", completed: false },
-    { id: 2, title: "todo2", completed: false },
-    { id: 3, title: "todo3", completed: false },
-    { id: 4, title: "todo4", completed: true },
-  ],
+  initialState: {
+    todos: [],
+    modal: {
+      isModalOpen: false,
+      id: null,
+    },
+  },
   reducers: {
-    addTodo: (state, action) => {
-      const newTodo = {
-        id: Date.now(),
-        title: action.payload.title,
-        completed: false,
-      };
-      state.push(newTodo);
-    },
-
-    toggleComplete: (state, action) => {
-      const index = state.findIndex((todo) => todo.id === action.payload.id);
-      state[index].completed = action.payload.completed;
-    },
-
-    deleteTodo: (state, action) => {
-      return state.filter((todo) => todo.id !== action.payload.id);
+    updateModal: (state, action) => {
+      state.modal = action.payload;
+      return state;
     },
   },
 
   extraReducers: {
     [getTodosAsync.fulfilled]: (state, action) => {
-      return action.payload.todos;
+      return { ...state, todos: action.payload.todos };
     },
     [addTodoAsync.fulfilled]: (state, action) => {
-      state.push(action.payload.todo);
+      return { ...state, todos: [...state.todos, action.payload.todo] };
     },
     [toggleCompleteAsync.fulfilled]: (state, action) => {
-      const index = state.findIndex(
+      const index = state.todos.findIndex(
         (todo) => todo.id === action.payload.todo.id
       );
-      state[index].completed = action.payload.todo.completed;
+      state.todos[index].completed = action.payload.todo.completed;
     },
 
     [deleteTodoAsync.fulfilled]: (state, action) => {
-      return state.filter((todo) => todo.id !== action.payload.id);
+      console.log(action, state);
+      return {
+        ...state,
+        todos: state.todos.filter((todo) => todo.id !== action.payload.id),
+      };
+    },
+
+    [updateTodoAsync.fulfilled]: (state, action) => {
+      console.log(action.payload);
+      const index = state.todos.findIndex(
+        (todo) => todo.id === action.payload.id
+      );
+      state.todos[index].title = action.payload.title;
+      state.todos[index].endDate = action.payload.endDate;
+      state.modal.isModalOpen = false;
     },
   },
 });
 
-export const { addTodo, toggleComplete, deleteTodo } = todoSlice.actions;
+export const { updateModal } = todoSlice.actions;
 
 export default todoSlice.reducer;
